@@ -1,0 +1,58 @@
+{
+  "runner": {
+    "default": {
+      "docker_image": null,
+      "source_filename": null,
+      "compile_command": null,
+      "run_command": null,
+      "cpus": 0.5,
+      "memory": "256m",
+      "pids_limit": 50,
+      "ulimit_nofile": "1024:1024",
+      "read_only": true,
+      "network": "none",
+      "user": "1000:1000"
+    },
+    "overrides": {
+      "python": {
+        "docker_image": "python:3.11",
+        "source_filename": "main.py",
+        "run_command": "python {file_name}{file_extension}"
+      },
+      "java": {
+        "docker_image": "openjdk:21",
+        "source_filename": "Main.java",
+        "compile_command": "javac {file_name}{file_extension}",
+        "run_command": "java {file_name}"
+      },
+      "cpp": {
+        "docker_image": "gcc:13",
+        "source_filename": "main.cpp",
+        "compile_command": "g++ {file_name}{file_extension} -o {file_name}",
+        "run_command": "./{file_name}"
+      },
+      "c": {
+        "docker_image": "gcc:13",
+        "source_filename": "main.c",
+        "compile_command": "gcc {file_name}{file_extension} -o {file_name}",
+        "run_command": "./{file_name}"
+      },
+      "ruby": {
+        "docker_image": "ruby:3.1",
+        "source_filename": "main.rb",
+        "run_command": "ruby {file_name}{file_extension}"
+      },
+      "javascript": {
+        "docker_image": "node:16",
+        "source_filename": "index.js",
+        "run_command": "node {file_name}{file_extension}"
+      }
+    },
+    "aliases": {
+      "py": "python",
+      "rb": "ruby",
+      "js": "nodejs",
+      "c++": "cpp"
+    }
+  }
+}
