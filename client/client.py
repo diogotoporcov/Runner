@@ -4,7 +4,10 @@ from typing import Union
 import discord
 from discord.ext.commands.bot import Bot
 
-from utils.files import list_files, path_to_module
+from utils.files import list_files, path_to_module, load_config
+
+
+CONFIG = load_config(Path("./config.json"))
 
 
 class Client(Bot):
