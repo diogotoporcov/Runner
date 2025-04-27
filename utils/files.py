@@ -3,14 +3,16 @@ from pathlib import Path
 from typing import List, Dict, Any
 
 
-def list_files(directory: Path, *extensions: str) -> List[Path]:
-    if not directory.is_dir():
-        raise ValueError(f"{directory} is not a valid directory.")
+def list_cogs(directory: Path, recursive: bool = False) -> List[Path]:
+    if recursive:
+        return list(directory.rglob("*_cog.py"))
 
-    if not extensions:
-        return [file for file in directory.rglob("*") if file.is_file()]
-
-    return [file for file in directory.rglob("*") if file.suffix in extensions]
+    return [
+        file for file
+        in directory.iterdir()
+        if file.is_file
+        and file.name.endswith("_cog.py")
+    ]
 
 
 def path_to_module(file_path: Path) -> str:

@@ -4,8 +4,7 @@ from typing import Union
 import discord
 from discord.ext.commands.bot import Bot
 
-from utils.files import list_files, path_to_module, load_config
-
+from utils.files import path_to_module, load_config, list_cogs
 
 CONFIG = load_config(Path("./config.json"))
 
@@ -25,7 +24,7 @@ class Client(Bot):
             path = Path(path)
 
         # Load cogs
-        for cog_path in list_files(path, ".py"):
+        for cog_path in list_cogs(path):
             cog_module = path_to_module(cog_path)
             await self.load_extension(cog_module)
             print(f"Loaded cog: {cog_module}")
