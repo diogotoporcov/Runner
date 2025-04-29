@@ -5,13 +5,14 @@ import time
 import uuid
 from collections import ChainMap
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Tuple
 
 import discord
 from discord.ext.commands import Bot, Cog
 
 from client.client import CONFIG
 from utils.code_helper import extract_code, runner_command_generator
+from utils.messages import format_to_discord_message
 from utils.stream import read_stream, update_periodically
 
 # Get the loaded config
@@ -37,7 +38,7 @@ class Runner(Cog):
             return
 
         if not lang:
-            await message.reply(f"❌ Language not supported!")
+            await message.reply(format_to_discord_message("❌ Language not supported!"))
             return
 
         reply = await message.reply("⚙️ Running...")
@@ -46,17 +47,33 @@ class Runner(Cog):
             output, execution_time = await Runner._run_code(reply, lang, code, filename, RUNNER_CONFIG["timeout"])
 
         except TimeoutError as e:
-            await reply.edit(content=f"🕒 Execution timed out after {str(e)}s.")
+            await reply.edit(content=format_to_discord_message(
+                f"🕒 Execution timed out after {str(e)}s.")
+            )
 
         except RuntimeError as e:
-            await reply.edit(content=f"❌ Error: ```\n{str(e)}\n```")
+            await reply.edit(content=format_to_discord_message(
+                str(e),
+                "❌ Error: ```\n",
+                "\n```")
+            )
 
         except Exception as e:
             print(f"{type(e).__name__}: {str(e)}")
-            await reply.edit(content="❌ Error: `Something went wrong!`")
+            await reply.edit(content=format_to_discord_message(
+                "`Something went wrong!`",
+                "❌ Error: ")
+            )
 
         else:
-            await reply.edit(content=f"📤 Output:\n```{output}\n```\n✅ Executed in {execution_time:.2f}s!")
+            await reply.edit(
+                content=format_to_discord_message(
+                    output,
+                    "📤 Output:\n```\n",
+                    f"```\n✅ Executed"
+                    # " in {execution_time:.2f}s!"
+                )
+            )
 
     # Function to run the code within Docker sandbox
     @staticmethod
@@ -66,8 +83,9 @@ class Runner(Cog):
             code: str,
             file_name: Optional[str] = None,
             timeout: float = 120
-    ) -> tuple[Optional[str], float]:
+    ) -> Tuple[Optional[str], float]:
         tempdir = None
+        proc = None
 
         try:
             # Check if the language is implemented
@@ -151,7 +169,7 @@ class Runner(Cog):
                 asyncio.gather(
                     read_stream(proc.stdout, output),
                     read_stream(proc.stderr, output_err),
-                    update_periodically(message, proc, output, 2)
+                    update_periodically(message, proc, output, RUNNER_CONFIG["console_update"]),
                 ),
                 timeout=timeout
             )
@@ -160,19 +178,23 @@ class Runner(Cog):
 
             end_time = time.time()
 
-            if proc.returncode != 0:
-                raise RuntimeError("\n".join(output_err))
-
-            execution_time = end_time - start_time
-
-            return "\n".join(output), execution_time
-
         except asyncio.TimeoutError:
             raise TimeoutError(timeout)
 
         finally:
+            if proc and proc.returncode is None:
+                proc.terminate()
+                await proc.wait()
+
             if tempdir and tempdir.exists():
                 shutil.rmtree(tempdir, ignore_errors=True)
+
+        if proc.returncode != 0:
+            raise RuntimeError("\n".join(output_err))
+
+        execution_time = end_time - start_time
+
+        return "\n".join(output), execution_time
 
 
 # Function to add the Runner cog to the bot

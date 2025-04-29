@@ -3,6 +3,8 @@ from typing import List
 
 import discord
 
+from utils.messages import format_to_discord_message
+
 
 async def read_stream(stream: asyncio.StreamReader, lst: List[str]):
     while True:
@@ -22,5 +24,13 @@ async def update_periodically(
     while proc.returncode is None:
         await asyncio.sleep(delay)
 
-        if content:
-            await message.edit(content="📤 Output:\n```" + '\n'.join(content) + "```")
+        if not content:
+            continue
+
+        formatted_content = format_to_discord_message(
+            "\n".join(content),
+            "📤 Output:\n```\n",
+            "```"
+        )
+
+        await message.edit(content=formatted_content)

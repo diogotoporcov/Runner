@@ -1,6 +1,7 @@
 {
   "runner": {
     "timeout": 120.0,
+    "console_update": 0.5,
     "default": {
       "docker_image": null,
       "source_filename": null,
@@ -24,7 +25,7 @@
         "docker_image": "openjdk:21",
         "source_filename": "Main.java",
         "compile_command": "javac {file_name}{file_extension}",
-        "run_command": "java -Xmx{memory} {file_name}"
+        "run_command": "stdbuf -oL java -Xmx{memory} {file_name}"
       },
       "c++": {
         "docker_image": "gcc:13",
