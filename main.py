@@ -1,10 +1,7 @@
 import os
-from pathlib import Path
 
 from client.client import Client
 from dotenv import load_dotenv
-
-from utils.files import load_config
 
 if __name__ == '__main__':
     load_dotenv()

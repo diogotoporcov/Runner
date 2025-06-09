@@ -29,27 +29,31 @@ async def extract_code(
     if file_extension not in runner_config["overrides"]:
         file_extension = runner_config["aliases"].get(file_extension)
 
-    return file_name, file_extension, code
+    return code, file_name, file_extension
 
 
 def runner_command_generator(**kwarg) -> List[str]:
-    return [
+    command = [
         "docker", "run", "--rm",  # Run a Docker container and remove it after execution
         "--name", kwarg["name"],  # Assign a name to the container
         f"--cpus={kwarg['cpus']}",  # Set the number of CPUs the container can use
         f"--memory={kwarg['memory']}",  # Set the amount of memory the container can use
         f"--pids-limit={kwarg['pids_limit']}",  # Set a limit on the number of processes in the container
         f"--ulimit=nofile={kwarg['ulimit_nofile']}",  # Set the ulimit for the number of open files
-        "--read-only" if kwarg["read_only"] else "",
-        # Set the container filesystem to read-only if the config specifies
         f"--network={kwarg['network']}",  # Set the network mode for the container
-        "-v", f"{kwarg['tempdir']}:/sandbox:rw",
-        # Mount a volume with read-write access from tempdir to /sandbox in the container
+        "-v", f"{kwarg['tempdir']}:/sandbox:rw",  # Mount a volume with read-write access from tempdir to /sandbox in the container
         "-w", "/sandbox",  # Set the working directory inside the container to /sandbox
         "-u", kwarg["user"],  # Set the user to run the container as
         kwarg["docker_image"],  # Specify the Docker image to run
-        "sh", "-c",
+        "sh", "-c",  # Execute the following command string using the shell
         f"{kwarg['compile_command']} && {kwarg['run_command']}"
         if kwarg["compile_command"]
-        else kwarg['run_command']
+        else kwarg["run_command"]  # Run both compile and execution commands if compile_command exists; otherwise, run only run_command
     ]
+
+    if kwarg.get("read_only"):
+        command.insert(8, "--read-only")  # Set the container filesystem to read-only if the config specifies
+
+    return command
+
+

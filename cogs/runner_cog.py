@@ -32,12 +32,12 @@ class Runner(Cog):
         if self.bot.user not in message.mentions:
             return
 
-        filename, lang, code = await extract_code(message, RUNNER_CONFIG)
+        code, filename, lang = await extract_code(message, RUNNER_CONFIG)
 
-        if not code:
+        if not code.split():
             return
 
-        if not lang:
+        if not lang.split():
             await message.reply(format_to_discord_message("❌ Language not supported!"))
             return
 
@@ -71,7 +71,6 @@ class Runner(Cog):
                     output,
                     "📤 Output:\n```\n",
                     f"```\n✅ Executed"
-                    # " in {execution_time:.2f}s!"
                 )
             )
 
@@ -120,7 +119,7 @@ class Runner(Cog):
             # Get the file path
             file_name = Path(file_name or config["source_filename"])
 
-            # Write source file
+            # Write the source file
             source_path = tempdir / file_name
             source_path.write_text(code, encoding="utf-8")
 

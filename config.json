@@ -43,12 +43,20 @@
         "docker_image": "node:16",
         "source_filename": "index.js",
         "run_command": "stdbuf -oL node {file_name}{file_extension}"
+      },
+      "rust": {
+        "docker_image": "rust:1.78",
+        "source_filename": "main.rs",
+        "compile_command": "rustc {file_name}{file_extension} -o {file_name}",
+        "run_command": "stdbuf -oL ./{file_name} 2>&1",
+        "read_only": false
       }
     },
     "aliases": {
       "py": "python",
       "cpp": "c++",
-      "js": "javascript"
+      "js": "javascript",
+      "rs": "rust"
     }
   }
 }
